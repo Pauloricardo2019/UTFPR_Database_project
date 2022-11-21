@@ -1,0 +1,72 @@
+image: golang:latest
+
+variables:
+  BIN_NAME: snp_api
+
+stages:
+  - tests
+  - deploy
+
+UNIT_TESTS:
+  stage: tests
+  variables:
+    PORT: 8080
+    ENV: TEST
+  script:
+    - go test -v ./...
+
+INTEGRATION_TESTS:
+  stage: tests
+  when: manual
+  services:
+    - postgres:latest
+  variables:
+    POSTGRES_USER: user
+    POSTGRES_PASSWORD: password
+    POSTGRES_DB: snp
+    POSTGRES_HOST: postgres
+    PORT: 8080
+    ENV: TEST
+    DB_CONNSTRING: host=postgres port=5432 user=user password=password dbname=snp sslmode=disable
+  script:
+    - go run ./cmd/migration/main.go
+    - go test -v ./... --tags=integration_test
+
+DEPLOY_DEV:
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay
+    APP_NAME: gda-api-dev
+  stage: deploy
+  script:
+    - docker build -f Dockerfile --iidfile imageid.txt -t registry.heroku.com/$APP_NAME .
+    - docker login -u _ -p $HEROKU_TOKEN registry.heroku.com
+    - docker push registry.heroku.com/$APP_NAME
+    - apk add --no-cache curl
+    - echo "Docker Image ID is $(cat imageid.txt)"
+    - |-
+      curl -X PATCH https://api.heroku.com/apps/$APP_NAME/formation --header "Content-Type: application/json" --header "Accept: application/vnd.heroku+json; version=3.docker-releases" --header "Authorization: Bearer ${HEROKU_TOKEN}" --data '{ "updates": [ { "type": "web", "docker_image": "'$(cat imageid.txt)'" } ] }'
+  only:
+    - main
+
+DEPLOY_STAGING:
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay
+    APP_NAME: gda-api-staging
+  stage: deploy
+  when: manual
+  script:
+    - docker build -f Dockerfile --iidfile imageid.txt -t registry.heroku.com/$APP_NAME .
+    - docker login -u _ -p $HEROKU_TOKEN registry.heroku.com
+    - docker push registry.heroku.com/$APP_NAME
+    - apk add --no-cache curl
+    - echo "Docker Image ID is $(cat imageid.txt)"
+    - |-
+      curl -X PATCH https://api.heroku.com/apps/$APP_NAME/formation --header "Content-Type: application/json" --header "Accept: application/vnd.heroku+json; version=3.docker-releases" --header "Authorization: Bearer ${HEROKU_TOKEN}" --data '{ "updates": [ { "type": "web", "docker_image": "'$(cat imageid.txt)'" } ] }'
+  only:
+    - main

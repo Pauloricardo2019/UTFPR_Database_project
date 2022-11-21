@@ -1,0 +1,152 @@
+definitions:
+  dto.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+  dto.CreateUserResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.HealthCheckResponse:
+    properties:
+      status:
+        type: string
+    type: object
+  dto.UpdateUserRequest:
+    properties:
+      firstName:
+        type: string
+      id:
+        type: integer
+      lastName:
+        type: string
+    type: object
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+paths:
+  /health-check:
+    get:
+      consumes:
+      - application/json
+      description: '- Health-Check for the API'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HealthCheckResponse'
+      summary: '- Health-Check'
+      tags:
+      - '- Health-Check'
+  /v1/user:
+    post:
+      consumes:
+      - application/json
+      description: '- Create a user'
+      parameters:
+      - description: User to be created
+        in: body
+        name: User
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateUserResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: '- Create user'
+      tags:
+      - '- User'
+    put:
+      consumes:
+      - application/json
+      description: '- Create a user'
+      parameters:
+      - description: User to be created
+        in: body
+        name: User
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - ApiKeyAuth: []
+      summary: '- Create user'
+      tags:
+      - '- User'
+  /v1/user/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: '- Create a user'
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - ApiKeyAuth: []
+      summary: '- Create user'
+      tags:
+      - '- User'
+    get:
+      consumes:
+      - application/json
+      description: '- Create a user'
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateUserResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: '- Create user'
+      tags:
+      - '- User'
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
