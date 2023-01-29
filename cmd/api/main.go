@@ -30,12 +30,7 @@ func main() {
 	if err != nil {
 		fmt.Println("error opening connection ", err)
 	}
-	/*
-		if err = db.Exec("CREATE TABLE tbl_autores ( ID_Autor integer CONSTRAINT pk_id_autor PRIMARY KEY, Nome_Autor varchar(30) NOT NULL, Sobrenome_Autor varchar(40) NOT NULL, Data_Nasc date);").Error; err != nil {
-			errs := err
-			fmt.Println(errs)
-		}
-	*/
+
 	healthCheckController := controller.NewHealthCheckController()
 
 	userRepository := repository.NewUserRepository(db)
